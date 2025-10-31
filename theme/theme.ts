@@ -1,0 +1,46 @@
+import { MD3DarkTheme } from 'react-native-paper';
+
+export const theme = {
+  ...MD3DarkTheme,
+  colors: {
+    ...MD3DarkTheme.colors,
+    primary: '#2196F3',
+    primaryContainer: '#1976D2',
+    secondary: '#03A9F4',
+    secondaryContainer: '#0288D1',
+    tertiary: '#00BCD4',
+    background: '#0A0E27',
+    surface: '#121838',
+    surfaceVariant: '#1A2142',
+    error: '#EF5350',
+    errorContainer: '#C62828',
+    onPrimary: '#FFFFFF',
+    onPrimaryContainer: '#FFFFFF',
+    onSecondary: '#FFFFFF',
+    onSecondaryContainer: '#FFFFFF',
+    onBackground: '#E3F2FD',
+    onSurface: '#E3F2FD',
+    onSurfaceVariant: '#B3D9FF',
+    onError: '#FFFFFF',
+    onErrorContainer: '#FFFFFF',
+    outline: '#1E88E5',
+    outlineVariant: '#0D47A1',
+    inverseSurface: '#E3F2FD',
+    inverseOnSurface: '#0A0E27',
+    inversePrimary: '#1976D2',
+    shadow: '#000000',
+    scrim: '#000000',
+    backdrop: 'rgba(10, 14, 39, 0.4)',
+    elevation: {
+      level0: 'transparent',
+      level1: '#151B3D',
+      level2: '#1A2142',
+      level3: '#1E2647',
+      level4: '#202849',
+      level5: '#232C4F',
+    },
+  },
+  roundness: 12,
+};
+
+export type AppTheme = typeof theme;
