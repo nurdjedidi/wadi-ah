@@ -3,9 +3,9 @@ import { supabase } from '@/lib/supabase';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { Appbar, ProgressBar, Text, useTheme } from 'react-native-paper';
+import { useEffect, useState, useRef } from 'react';
+import { Pressable, ScrollView, StyleSheet, View, Animated } from 'react-native';
+import { ProgressBar, Text, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
@@ -41,10 +41,28 @@ export default function HomeScreen() {
   const [weekWorkouts, setWeekWorkouts] = useState(0);
   const [showCardioDetails, setShowCardioDetails] = useState(false);
   const [showFPDetails, setShowFPDetails] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
 
   useEffect(() => {
     loadData();
   }, [user]);
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        tension: 30,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
   const loadData = async () => {
     if (!user) return;
@@ -307,34 +325,70 @@ export default function HomeScreen() {
   </BlurView>
 </View>
 
-        <Pressable style={styles.ctaWrapper} onPress={() => router.push('/new-food')}>
-          <BlurView
-            intensity={40}
-            tint="dark"
-            style={[
-              styles.ctaCard,
-              {
-                backgroundColor: hexToRgba(theme.colors.secondaryContainer as string, 0.14),
-                borderColor: hexToRgba(theme.colors.primary as string, 0.22),
-              },
-            ]}
-          >
-            <View style={styles.ctaContent}>
-              <View style={styles.ctaTextBlock}>
-                <Text variant="titleSmall" style={styles.glassTitle}>Ajouter des aliments</Text>
-                <Text variant="bodySmall" style={styles.ctaSubtitle}>Renseignez vos ingrédients consommés</Text>
-              </View>
-              <View style={styles.ctaPill}>
-                <Text variant="labelLarge" style={styles.valueBadgeText}>Commencer</Text>
-              </View>
-            </View>
-          </BlurView>
-        </Pressable>
+        <Animated.View
+          style={{
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }],
+          }}
+        >
+          <Pressable style={styles.ctaWrapper} onPress={() => router.push('/new-food')}>
+            <LinearGradient
+              colors={['rgba(33, 150, 243, 0.25)', 'rgba(33, 150, 243, 0.10)']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.ctaGradient}
+            >
+              <BlurView
+                intensity={30}
+                tint="dark"
+                style={[
+                  styles.ctaCard,
+                  {
+                    backgroundColor: hexToRgba(theme.colors.secondaryContainer as string, 0.14),
+                    borderColor: hexToRgba(theme.colors.primary as string, 0.35),
+                  },
+                ]}
+              >
+                <View style={styles.ctaContent}>
+                  <View style={styles.ctaIconContainer}>
+                    <LinearGradient
+                      colors={['#2196F3', '#1976D2']}
+                      style={styles.ctaIconGradient}
+                    >
+                      <Ionicons name="add-circle" size={28} color="#FFFFFF" />
+                    </LinearGradient>
+                  </View>
+                  <View style={styles.ctaTextBlock}>
+                    <Text variant="titleMedium" style={styles.glassTitle}>Ajouter des aliments</Text>
+                    <Text variant="bodySmall" style={styles.ctaSubtitle}>Suivez votre nutrition au quotidien</Text>
+                  </View>
+                  <View style={styles.ctaPill}>
+                    <Ionicons name="arrow-forward" size={18} color="#E3F2FD" />
+                  </View>
+                </View>
+              </BlurView>
+            </LinearGradient>
+          </Pressable>
+        </Animated.View>
 
         <NutritionSliderCard />
 
-        <View style={styles.scoresRow}>
-          <Pressable style={styles.glassMiniWrapper} onPress={() => setShowCardioDetails((v) => !v)}>
+        <Animated.View
+          style={[
+            styles.scoresRow,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
+        >
+          <Pressable
+            style={({ pressed }) => [
+              styles.glassMiniWrapper,
+              pressed && styles.glassMiniPressed,
+            ]}
+            onPress={() => setShowCardioDetails((v) => !v)}
+          >
             <BlurView
               intensity={40}
               tint="dark"
@@ -391,7 +445,13 @@ export default function HomeScreen() {
             </BlurView>
           </Pressable>
 
-          <Pressable style={styles.glassMiniWrapper} onPress={() => setShowFPDetails((v) => !v)}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.glassMiniWrapper,
+              pressed && styles.glassMiniPressed,
+            ]}
+            onPress={() => setShowFPDetails((v) => !v)}
+          >
             <BlurView
               intensity={40}
               tint="dark"
@@ -447,9 +507,17 @@ export default function HomeScreen() {
               </View>
             </BlurView>
           </Pressable>
-        </View>
+        </Animated.View>
 
-        <View style={styles.glassWideWrapper}>
+        <Animated.View
+          style={[
+            styles.glassWideWrapper,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
+        >
           <BlurView
             intensity={40}
             tint="dark"
@@ -500,7 +568,7 @@ export default function HomeScreen() {
               </View>
             </View>
           </BlurView>
-        </View>
+        </Animated.View>
 
       </ScrollView>
     </SafeAreaView>
@@ -528,33 +596,55 @@ const styles = StyleSheet.create({
     color: '#B3D9FF',
   },
   ctaWrapper: {
-    borderRadius: 16,
+    borderRadius: 20,
     overflow: 'hidden',
     marginBottom: 4,
   },
+  ctaGradient: {
+    borderRadius: 20,
+  },
   ctaCard: {
-    borderWidth: 1,
+    borderWidth: 2,
+    borderRadius: 20,
   },
   ctaContent: {
-    padding: 14,
+    padding: 18,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
+    gap: 14,
+  },
+  ctaIconContainer: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#2196F3',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  ctaIconGradient: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   ctaTextBlock: {
-    gap: 2,
+    flex: 1,
+    gap: 4,
   },
   ctaSubtitle: {
-    color: '#B3D9FF',
+    color: '#93C5FD',
   },
   ctaPill: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 999,
-    backgroundColor: 'rgba(33, 150, 243, 0.15)',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(33, 150, 243, 0.2)',
     borderWidth: 1,
-    borderColor: 'rgba(33, 150, 243, 0.35)',
+    borderColor: 'rgba(33, 150, 243, 0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   glassCardWrapper: {
     borderRadius: 16,
@@ -687,11 +777,15 @@ const styles = StyleSheet.create({
   },
   glassMiniWrapper: {
     flex: 1,
-    borderRadius: 16,
+    borderRadius: 18,
     overflow: 'hidden',
   },
+  glassMiniPressed: {
+    opacity: 0.7,
+    transform: [{ scale: 0.97 }],
+  },
   glassMini: {
-    borderWidth: 1,
+    borderWidth: 1.5,
   },
   miniContent: {
     padding: 12,
@@ -718,6 +812,8 @@ const styles = StyleSheet.create({
   },
   tapHint: {
     color: '#93C5FD',
+    fontSize: 10,
+    fontStyle: 'italic',
   },
   miniExpand: {
     width: '100%',
@@ -732,6 +828,7 @@ const styles = StyleSheet.create({
   miniExpandLabel: {
     width: 56,
     color: '#B3D9FF',
+    fontWeight: '600',
   },
   miniExpandValue: {
     color: '#E3F2FD',
@@ -739,19 +836,19 @@ const styles = StyleSheet.create({
   miniLinear: {
     flex: 1,
     height: 10,
-    borderRadius: 4,
+    borderRadius: 6,
     backgroundColor: '#0F1533',
   },
   glassWideWrapper: {
     marginTop: 12,
-    borderRadius: 16,
+    borderRadius: 20,
     overflow: 'hidden',
   },
   glassWide: {
-    borderWidth: 1,
-    shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
+    borderWidth: 1.5,
+    shadowColor: '#2196F3',
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
     shadowOffset: { width: 0, height: 8 },
   },
   wideContent: {
@@ -806,20 +903,20 @@ const styles = StyleSheet.create({
     color: '#93C5FD',
   },
   valueBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    backgroundColor: 'rgba(59, 130, 246, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(59, 130, 246, 0.35)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(59, 130, 246, 0.4)',
   },
   valueBadgeNeutral: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    backgroundColor: 'rgba(139, 92, 246, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.35)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(139, 92, 246, 0.4)',
   },
   valueBadgeText: {
     color: '#E3F2FD',

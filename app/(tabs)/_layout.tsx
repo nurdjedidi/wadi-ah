@@ -1,12 +1,47 @@
 import { Tabs } from 'expo-router';
 import { ScanLine, User, Utensils, Search, ScanQrCode, ScanBarcode } from 'lucide-react-native';
-import { StyleSheet, TouchableOpacity, View, Text } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, Text, Animated, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
   const [showScanMenu, setShowScanMenu] = useState(false);
+  const scaleAnim = useRef(new Animated.Value(0)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (showScanMenu) {
+      Animated.parallel([
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          useNativeDriver: true,
+          tension: 50,
+          friction: 7,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(scaleAnim, {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [showScanMenu]);
   
   return (
     <>
@@ -74,37 +109,76 @@ export default function TabsLayout() {
       </Tabs>
 
       {showScanMenu && (
-        <View style={styles.floatingMenu} pointerEvents="box-none">
-          <TouchableOpacity 
-            style={styles.floatingButton}
-            onPress={() => {
-              setShowScanMenu(false);
-              // Action gauche - Scanner QR
-            }}
+        <>
+          <Pressable
+            style={styles.backdrop}
+            onPress={() => setShowScanMenu(false)}
           >
-            <ScanBarcode size={28} color="#FFFFFF" />
-          </TouchableOpacity>
+            <BlurView intensity={20} tint="dark" style={StyleSheet.absoluteFill} />
+          </Pressable>
 
-          <TouchableOpacity 
-            style={styles.floatingButton}
-            onPress={() => {
-              setShowScanMenu(false);
-              // Action centre - Scanner Code-barres
-            }}
+          <Animated.View
+            style={[
+              styles.floatingMenu,
+              {
+                opacity: opacityAnim,
+                transform: [{ scale: scaleAnim }],
+              },
+            ]}
+            pointerEvents="box-none"
           >
-            <Search size={28} color="#FFFFFF" />
-          </TouchableOpacity>
+            <Pressable
+              style={styles.floatingButtonWrapper}
+              onPress={() => {
+                setShowScanMenu(false);
+              }}
+            >
+              <LinearGradient
+                colors={['#3B82F6', '#2563EB']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.floatingButton}
+              >
+                <ScanBarcode size={24} color="#FFFFFF" strokeWidth={2.5} />
+                <Text style={styles.floatingButtonLabel}>Code-barres</Text>
+              </LinearGradient>
+            </Pressable>
 
-          <TouchableOpacity 
-            style={styles.floatingButton}
-            onPress={() => {
-              setShowScanMenu(false);
-              // Action droite - Scanner Document
-            }}
-          >
-            <ScanQrCode size={28} color="#FFFFFF" />
-          </TouchableOpacity>
-        </View>
+            <Pressable
+              style={styles.floatingButtonWrapper}
+              onPress={() => {
+                setShowScanMenu(false);
+              }}
+            >
+              <LinearGradient
+                colors={['#10B981', '#059669']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.floatingButton}
+              >
+                <Search size={24} color="#FFFFFF" strokeWidth={2.5} />
+                <Text style={styles.floatingButtonLabel}>Recherche</Text>
+              </LinearGradient>
+            </Pressable>
+
+            <Pressable
+              style={styles.floatingButtonWrapper}
+              onPress={() => {
+                setShowScanMenu(false);
+              }}
+            >
+              <LinearGradient
+                colors={['#8B5CF6', '#7C3AED']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.floatingButton}
+              >
+                <ScanQrCode size={24} color="#FFFFFF" strokeWidth={2.5} />
+                <Text style={styles.floatingButtonLabel}>QR Code</Text>
+              </LinearGradient>
+            </Pressable>
+          </Animated.View>
+        </>
       )}
     </>
   );
@@ -139,36 +213,45 @@ const styles = StyleSheet.create({
     borderColor: '#42A5F5',
     shadowColor: '#2196F3',
     shadowOpacity: 0.8,
+    transform: [{ scale: 1.05 }],
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 999,
   },
   floatingMenu: {
     position: 'absolute',
     bottom: 140,
     alignSelf: 'center',
     flexDirection: 'row',
-    gap: 16,
+    gap: 20,
     zIndex: 1000,
   },
-  floatingButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#0A0E27',
-    borderWidth: 2,
-    borderColor: '#2196F3',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#2196F3',
+  floatingButtonWrapper: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 4,
+      height: 8,
     },
-    shadowOpacity: 0.4,
-    shadowRadius: 6,
-    elevation: 6,
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 10,
   },
-  floatingButtonText: {
+  floatingButton: {
+    width: 85,
+    height: 85,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+  },
+  floatingButtonLabel: {
     color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+    textAlign: 'center',
   },
 });
